@@ -127,6 +127,7 @@ namespace ProgLab2
             this.backButton.TabIndex = 7;
             this.backButton.Text = "Назад";
             this.backButton.UseVisualStyleBackColor = true;
+            this.backButton.Click += new System.EventHandler(this.backButton_Click);
             // 
             // forwardButton
             // 
@@ -136,6 +137,7 @@ namespace ProgLab2
             this.forwardButton.TabIndex = 8;
             this.forwardButton.Text = "Вперед";
             this.forwardButton.UseVisualStyleBackColor = true;
+            this.forwardButton.Click += new System.EventHandler(this.forwardButton_Click);
             // 
             // menuStrip1
             // 

@@ -14,12 +14,15 @@ namespace ProgLab2
 {
     public partial class Form1 : Form
     {
+        static List<double> xPoints = new List<double>();
+        static List<double> yPoints = new List<double>();
+
         public Form1()
         {
             InitializeComponent();
         }
 
-        private void ToolStripMenuItem_Click(object sender, EventArgs e)
+        async private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -42,12 +45,10 @@ namespace ProgLab2
                     espValue *= 10;
                     counter += 1;
                 }
-                PointPairList mPoint = new PointPairList();
-                List<double> xPoints = new List<double>();
-                List<double> yPoints = new List<double>();
-                int stepsCounter = -1;
 
-                LineDraw(aBord, bBord, esp, func);
+                PointPairList mPoint = new PointPairList();
+
+                await Task.Run(() => LineDraw(aBord, bBord, esp, func));
                 double minPoint = 0;
                 while (Math.Abs(bBord - aBord) >= esp)
                 {
@@ -63,15 +64,15 @@ namespace ProgLab2
                         bBord = x2;
                     }
                     minPoint = (aBord + bBord) / 2;
-                    stepsCounter += 1;
                     xPoints.Add(minPoint);
                     yPoints.Add(FuncValue(minPoint, func));
                 }
-                double point = Math.Round(FuncValue(minPoint, func), counter);
+                double point = FuncValue(minPoint, func);
                 mPoint.Add(minPoint, point);
-                LineItem linePoint = pane.AddCurve("Point", mPoint, Color.Black, SymbolType.Default);
-                textBoxAnswer.Text = "(" + Math.Round(minPoint, counter).ToString() + ":" + Math.Round(FuncValue(minPoint, func), counter).ToString() + ")";
+                pane.AddCurve("Point", mPoint, Color.Black, SymbolType.Default);
+                textBoxAnswer.Text = xPoints.Count().ToString();
             }
+
             catch
             {
                 if (textBoxA.Text == "" || textBoxB.Text == "" || textBoxE.Text == "" || textBoxF.Text == "")
@@ -92,8 +93,12 @@ namespace ProgLab2
                 }
             }
         }
+
+        int stepsCounter = -1;
+
         private void LineDraw(double aBord, double bBord, double esp, Expression func)
         {
+            
             GraphPane pane = zedGraph.GraphPane;
             pane.CurveList.Clear();
 
@@ -112,14 +117,13 @@ namespace ProgLab2
 
             PointPairList list = new PointPairList();
 
-
             for (double x = aBord; x <= bBord; x += esp)
             {
                 double funcValue = Math.Round(FuncValue(x, func), counter);
                 list.Add(x, funcValue);
             }
 
-            LineItem myCurve = pane.AddCurve("Sinc", list, Color.Blue, SymbolType.None);
+            pane.AddCurve("Sinc", list, Color.Blue, SymbolType.None);
             zedGraph.AxisChange();
             zedGraph.Invalidate();
         }
@@ -142,6 +146,77 @@ namespace ProgLab2
             else
             {
                 e.Handled = true;
+            }
+        }
+        private void backButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (stepsCounter < 0)
+                {
+                    stepsCounter = xPoints.Count();
+                }
+
+                GraphPane pane = zedGraph.GraphPane;
+                stepsCounter -= 1;
+
+                if (stepsCounter == 0)
+                {
+                    backButton.Enabled = false;
+                }
+
+                pane.CurveList.RemoveAt(1);
+                PointPairList stepsPoint = new PointPairList();
+                stepsPoint.Add(xPoints[stepsCounter], yPoints[stepsCounter]);
+                pane.AddCurve("Point", stepsPoint, Color.Red, SymbolType.Default);
+                zedGraph.AxisChange();
+                zedGraph.Invalidate();
+                textBoxAnswer.Text = stepsCounter.ToString();
+                forwardButton.Enabled = true;
+            }
+            catch
+            {
+                if (stepsCounter < 0)
+                {
+                    MessageBox.Show("Это первый шаг");
+                }
+
+            }
+        }
+
+        private void forwardButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (stepsCounter < 0)
+                {
+                    stepsCounter = xPoints.Count();
+                }
+
+                GraphPane pane = zedGraph.GraphPane;
+                stepsCounter += 1;
+
+                if (stepsCounter == xPoints.Count() - 1)
+                {
+                    forwardButton.Enabled = false;
+                }
+
+                textBoxAnswer.Text = stepsCounter.ToString();
+                pane.CurveList.RemoveAt(1);
+                PointPairList stepsPoint = new PointPairList();
+                stepsPoint.Add(xPoints[stepsCounter], yPoints[stepsCounter]);
+                pane.AddCurve("Point", stepsPoint, Color.Red, SymbolType.Default);
+                zedGraph.AxisChange();
+                zedGraph.Invalidate();
+                backButton.Enabled = true;
+            }
+            catch
+            {
+                if (stepsCounter > xPoints.Count())
+                {
+                    MessageBox.Show("Это последний шаг");
+                }
+
             }
         }
     }
