@@ -26,6 +26,8 @@ namespace ProgLab2
         {
             try
             {
+                xPoints.Clear();
+                yPoints.Clear();
                 GraphPane pane = zedGraph.GraphPane;
                 pane.CurveList.Clear();
                 double.TryParse(textBoxA.Text, out double aBord);
@@ -70,7 +72,10 @@ namespace ProgLab2
                 double point = FuncValue(minPoint, func);
                 mPoint.Add(minPoint, point);
                 pane.AddCurve("Point", mPoint, Color.Black, SymbolType.Default);
-                textBoxAnswer.Text = xPoints.Count().ToString();
+                zedGraph.AxisChange();
+                zedGraph.Invalidate();
+                textBoxAnswer.Text = "(" + Math.Round(minPoint, counter).ToString() + "); (" + Math.Round(FuncValue(minPoint, func), counter).ToString() + ")";
+                forwardButton.Enabled = false;
             }
 
             catch
@@ -154,7 +159,7 @@ namespace ProgLab2
             {
                 if (stepsCounter < 0)
                 {
-                    stepsCounter = xPoints.Count();
+                    stepsCounter = xPoints.Count() - 1;
                 }
 
                 GraphPane pane = zedGraph.GraphPane;
@@ -171,7 +176,6 @@ namespace ProgLab2
                 pane.AddCurve("Point", stepsPoint, Color.Red, SymbolType.Default);
                 zedGraph.AxisChange();
                 zedGraph.Invalidate();
-                textBoxAnswer.Text = stepsCounter.ToString();
                 forwardButton.Enabled = true;
             }
             catch
@@ -190,18 +194,17 @@ namespace ProgLab2
             {
                 if (stepsCounter < 0)
                 {
-                    stepsCounter = xPoints.Count();
+                    stepsCounter = xPoints.Count() - 1;
                 }
 
                 GraphPane pane = zedGraph.GraphPane;
                 stepsCounter += 1;
 
-                if (stepsCounter == xPoints.Count() - 1)
+                if (stepsCounter >= xPoints.Count() - 1)
                 {
                     forwardButton.Enabled = false;
                 }
 
-                textBoxAnswer.Text = stepsCounter.ToString();
                 pane.CurveList.RemoveAt(1);
                 PointPairList stepsPoint = new PointPairList();
                 stepsPoint.Add(xPoints[stepsCounter], yPoints[stepsCounter]);
